@@ -1,7 +1,16 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:guess_the_flag/ResultScreen.dart';
 
-class QuizScreen extends StatelessWidget {
+class QuizScreen extends StatefulWidget {
   QuizScreen();
+
+  @override
+  State<QuizScreen> createState() => _QuizScreenState();
+}
+
+class _QuizScreenState extends State<QuizScreen> {
   List<String> countries = [
     "Estonia",
     "France",
@@ -17,15 +26,28 @@ class QuizScreen extends StatelessWidget {
     "US",
   ];
 
+  int num = Random().nextInt(3);
+
+  int correctAnswer = 0;
+  int wrongAnswer = 0;
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    countries.shuffle();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey,
+      backgroundColor: Colors.grey,
       body: SafeArea(
         child: Center(
           child: Column(
             children: [
-              SizedBox(height: 16),
+              SizedBox(height: 14),
               Text(
                 "Guess The Flag?",
                 style: TextStyle(
@@ -34,17 +56,74 @@ class QuizScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                "Country Name",
+                countries[num],
                 style: TextStyle(
                   fontSize: 34,
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 15),
+              for (int i = 0; i < 3; i++)
+                FlagButton(
+                  name: countries[i],
+                  onPressed: () {
+                    if (num == i) {
+                      Fluttertoast.showToast(
+                          msg: "Correct Answer", backgroundColor: Colors.green);
+                      //increase the correct answer by 1
+                      correctAnswer++;
+                      print("correct $correctAnswer");
+                    } else {
+                      Fluttertoast.showToast(
+                          msg: "Wrong Answer", backgroundColor: Colors.red);
+                      //increase the wrong answer by 1
+                      wrongAnswer++;
+                      print("wrong $wrongAnswer");
+
+                    }
+                    setState(() {
+                      countries.shuffle();
+                      //To Change the state of correct answer.
+                      num = Random().nextInt(3);
+                    });
+                  },
+                ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ResultScreen(correctAnswer: correctAnswer, wrongAnswer: wrongAnswer,),
+                      ),
+                    );
+                  },
+                  child: Text("Result"))
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class FlagButton extends StatelessWidget {
+  const FlagButton({
+    Key? key,
+    required this.name,
+    required this.onPressed,
+  }) : super(key: key);
+
+  final String name;
+  final void Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      child: Image.asset(
+        "assets/countries/$name.png",
+        height: 125,
       ),
     );
   }
